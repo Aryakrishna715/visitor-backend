@@ -58,23 +58,18 @@ app.post('/submit', async (req, res) => {
         const pdfPath = path.join(pdfDirectory, `${savedVisitor._id}-epass.pdf`);
         const doc = new PDFDocument();
 
-        // Add watermark logo
+        // Add watermark and border
         const logoPath = path.join(__dirname, 'public', 'logo.png');
         const mapPath = path.join(__dirname, 'public', 'map.png');
+        const timezone = 'Asia/Kolkata'; // Adjust based on your timezone
 
-        doc.on('pageAdded', () => {
-            if (fs.existsSync(logoPath)) {
-                doc.image(logoPath, 50, 50, { fit: [100, 100], align: 'center', valign: 'center' })
-                    .opacity(0.1);
-            }
-        });
-
-        // Border for the PDF
-        doc.rect(10, 10, doc.page.width - 20, doc.page.height - 20)
-            .stroke('#000');
+        doc.pipe(fs.createWriteStream(pdfPath));
+        doc.rect(10, 10, doc.page.width - 20, doc.page.height - 20).stroke('#000'); // Border
+        if (fs.existsSync(logoPath)) {
+            doc.image(logoPath, 50, 50, { fit: [100, 100], align: 'center', valign: 'center' }).opacity(0.1);
+        }
 
         // Main content
-        doc.pipe(fs.createWriteStream(pdfPath));
         doc.font('Times-Bold').fontSize(28).fillColor('blue')
             .text('Brindavan Group of Institutions', { align: 'center' });
         doc.moveDown();
@@ -87,8 +82,8 @@ app.post('/submit', async (req, res) => {
         doc.text(`Purpose of Visit: ${purpose}`);
         doc.text(`Contact Number: ${contactNumber}`);
         doc.text(`Visit Date: ${visitDate}`);
-        doc.text(`Submission Time: ${submissionTime.toLocaleString()}`);
-        doc.text(`Creation Time: ${savedVisitor.createdAt.toLocaleString()}`);
+        doc.text(`Submission Time: ${submissionTime.toLocaleString('en-US', { timeZone: timezone })}`);
+        doc.text(`Creation Time: ${savedVisitor.createdAt.toLocaleString('en-US', { timeZone: timezone })}`);
         doc.moveDown();
 
         // Thank-you note
