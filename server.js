@@ -33,7 +33,6 @@ const visitorSchema = new mongoose.Schema({
     purpose: String,
     contactNumber: String,
     visitDate: String,
-    submissionTime: { type: Date, default: Date.now },
     createdAt: { type: Date, default: Date.now },
 });
 const Visitor = mongoose.model('Visitor', visitorSchema);
@@ -42,10 +41,9 @@ const Visitor = mongoose.model('Visitor', visitorSchema);
 app.post('/submit', async (req, res) => {
     try {
         const { visitorName, noOfPersons, purpose, contactNumber, visitDate } = req.body;
-        const submissionTime = new Date();
 
         // Save visitor data to MongoDB
-        const visitor = new Visitor({ visitorName, noOfPersons, purpose, contactNumber, visitDate, submissionTime });
+        const visitor = new Visitor({ visitorName, noOfPersons, purpose, contactNumber, visitDate });
         const savedVisitor = await visitor.save();
 
         // Prepare directory for saving PDFs
@@ -83,7 +81,6 @@ app.post('/submit', async (req, res) => {
         doc.text(`Purpose of Visit: ${purpose}`);
         doc.text(`Contact Number: ${contactNumber}`);
         doc.text(`Visit Date: ${visitDate}`);
-        doc.text(`Submission Time: ${submissionTime.toLocaleString('en-US', { timeZone: timezone })}`);
         doc.text(`Creation Time: ${savedVisitor.createdAt.toLocaleString('en-US', { timeZone: timezone })}`);
         doc.moveDown();
 
@@ -98,7 +95,7 @@ app.post('/submit', async (req, res) => {
         doc.moveDown();
 
         if (fs.existsSync(mapPath)) {
-            doc.image(mapPath, { fit: [500, 400], align: 'center', valign: 'center' });
+            doc.image(mapPath, { fit: [400, 400], align: 'center', valign: 'center' });
         } else {
             doc.text('Map image not available.');
         }
