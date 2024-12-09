@@ -58,15 +58,16 @@ app.post('/submit', async (req, res) => {
         const pdfPath = path.join(pdfDirectory, `${savedVisitor._id}-epass.pdf`);
         const doc = new PDFDocument();
 
-        // Add watermark and border
+        // Add logo to the top-right
         const logoPath = path.join(__dirname, 'public', 'logo.png');
         const mapPath = path.join(__dirname, 'public', 'map.png');
         const timezone = 'Asia/Kolkata'; // Adjust based on your timezone
 
         doc.pipe(fs.createWriteStream(pdfPath));
         doc.rect(10, 10, doc.page.width - 20, doc.page.height - 20).stroke('#000'); // Border
+
         if (fs.existsSync(logoPath)) {
-            doc.image(logoPath, 50, 50, { fit: [100, 100], align: 'center', valign: 'center' }).opacity(0.1);
+            doc.image(logoPath, doc.page.width - 110, 10, { fit: [100, 100], align: 'right' });
         }
 
         // Main content
@@ -87,7 +88,7 @@ app.post('/submit', async (req, res) => {
         doc.moveDown();
 
         // Thank-you note
-        doc.fontSize(20).fillColor('green')
+        doc.fontSize(20).fillColor('black')
             .text('Thank you for visiting us!', { align: 'center' });
         doc.moveDown();
 
