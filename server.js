@@ -92,7 +92,7 @@ app.post('/submit', async (req, res) => {
         // Map section
         doc.fontSize(22).fillColor('blue')
             .text('BGI Map', { align: 'center' });
-        doc.moveDown();
+        doc.moveDown(1);
 
         if (fs.existsSync(mapPath)) {
             doc.image(mapPath, { fit: [400, 400], align: 'center', valign: 'center' });
@@ -115,8 +115,17 @@ app.post('/submit', async (req, res) => {
     }
 });
 
-// Serve PDFs for download
-app.use('/pdf', express.static(path.join(__dirname, 'public', 'pdfs')));
+// Serve PDFs for download with Content-Disposition
+app.get('/pdf/:filename', (req, res) => {
+    const filePath = path.join(__dirname, 'public', 'pdfs', req.params.filename);
+    if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=' + req.params.filename);
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('File not found');
+    }
+});
 
 // Serve static files
 app.use('/public', express.static(path.join(__dirname, 'public')));
