@@ -5,15 +5,12 @@ const cors = require('cors');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
-const helmet = require('helmet');
 
 const app = express();
 
-// Middleware for CORS, JSON parsing, and security headers
+// Middleware for CORS and JSON parsing
 app.use(cors({ origin: '*' })); // Allows requests from all origins
 app.use(bodyParser.json());
-app.use(helmet()); // Adding security headers like Content-Security-Policy, X-Content-Type-Options, etc.
 
 // MongoDB Atlas connection
 const mongoURI = "mongodb+srv://snehasnair1149:EbHrylGWLOYaNfyL@cluster0.xysjr.mongodb.net/visitorDB?retryWrites=true&w=majority";
@@ -98,7 +95,7 @@ app.post('/submit', async (req, res) => {
         doc.moveDown();
 
         if (fs.existsSync(mapPath)) {
-            doc.image(mapPath, { fit: [400, 400], align: 'center', valign: 'center' });
+            doc.image(mapPath, { fit: [500, 400], align: 'center', valign: 'center' });
         } else {
             doc.text('Map image not available.');
         }
@@ -118,42 +115,14 @@ app.post('/submit', async (req, res) => {
     }
 });
 
-// Serve PDFs for download with Content-Disposition header
-app.get('/pdf/:filename', (req, res) => {
-    const filePath = path.join(__dirname, 'public', 'pdfs', req.params.filename);
-    if (fs.existsSync(filePath)) {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${req.params.filename}"`);
-        res.download(filePath, (err) => {
-            if (err) {
-                console.error("Error sending file:", err);
-                res.status(500).send('Error downloading the file.');
-            }
-        });
-    } else {
-        res.status(404).send('File not found');
-    }
-});
+// Serve PDFs for download
+app.use('/pdf', express.static(path.join(__dirname, 'public', 'pdfs')));
 
-// Serve static files (like images, CSS, etc.)
+// Serve static files
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// Force HTTPS redirection (important for production)
-app.use((req, res, next) => {
-    if (req.protocol !== 'https') {
-        return res.redirect(`https://${req.headers.host}${req.url}`);
-    }
-    next();
-});
-
-// SSL configuration for HTTPS (requires SSL certificate)
-const options = {
-    key: fs.readFileSync(path.join(__dirname, 'ssl', 'key.pem')), // Path to your private key
-    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem')), // Path to your certificate
-};
-
-// Start HTTPS server
+// Start the server
 const PORT = 3001;
-https.createServer(options, app).listen(PORT, () => {
-    console.log(`Secure server running on https://localhost:${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
