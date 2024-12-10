@@ -53,7 +53,8 @@ app.post('/submit', async (req, res) => {
         }
 
         // Generate PDF e-pass
-        const pdfPath = path.join(pdfDirectory, `${savedVisitor._id}-epass.pdf`);
+        const pdfFilename = `${savedVisitor._id}-epass.pdf`;
+        const pdfPath = path.join(pdfDirectory, pdfFilename);
         const doc = new PDFDocument();
 
         // Add logo to the top-right
@@ -102,12 +103,16 @@ app.post('/submit', async (req, res) => {
 
         doc.end();
 
+        // Use HTTPS if available, fallback to HTTP
+        const protocol = req.secure ? 'https' : 'http';
+        const backendUrl = `${protocol}://${req.get('host')}`;
+        const downloadLink = `${backendUrl}/pdf/${pdfFilename}`;
+
         // Send response with download link
-        const backendUrl = req.protocol + '://' + req.get('host');
         res.json({
             success: true,
             message: 'E-Pass generated successfully!',
-            downloadLink: `${backendUrl}/pdf/${savedVisitor._id}-epass.pdf`,
+            downloadLink: downloadLink,
         });
     } catch (err) {
         console.error("Error handling form submission:", err);
@@ -115,8 +120,16 @@ app.post('/submit', async (req, res) => {
     }
 });
 
-// Serve PDFs for download
-app.use('/pdf', express.static(path.join(__dirname, 'public', 'pdfs')));
+// Serve PDFs with correct MIME Type
+app.use('/pdf', (req, res, next) => {
+    const filePath = path.join(__dirname, 'public', 'pdfs', req.url);
+    if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
+        return res.sendFile(filePath);
+    }
+    res.status(404).send('File not found');
+});
 
 // Serve static files
 app.use('/public', express.static(path.join(__dirname, 'public')));
