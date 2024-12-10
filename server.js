@@ -104,8 +104,8 @@ app.post('/submit', async (req, res) => {
         doc.end();
 
         // Use HTTPS if available, fallback to HTTP
-        const protocol = req.secure ? 'https' : 'http';
-        const backendUrl = `${protocol}://${req.get('host')}`;
+        const protocol = req.secure ? 'https' : 'http'; // Check if the request is secure
+        const backendUrl = `${protocol}://${req.get('host')}`; // Use the host of the request
         const downloadLink = `${backendUrl}/pdf/${pdfFilename}`;
 
         // Send response with download link
@@ -135,7 +135,7 @@ app.use('/pdf', (req, res, next) => {
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Start the server
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on https://localhost:${PORT}`);
 });
