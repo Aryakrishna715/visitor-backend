@@ -8,8 +8,19 @@ const path = require('path');
 
 const app = express();
 
+// CORS options to allow specific origins
+const corsOptions = {
+    origin: [
+        'https://aryakrishna715.github.io/visitor-frontend/', // Replace with actual frontend URL
+        'http://localhost:3001', // Add localhost for local testing if needed
+    ],
+    methods: 'GET, POST',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true, // Allow credentials if needed
+};
+
 // Middleware for CORS and JSON parsing
-app.use(cors({ origin: '*' })); // Allows requests from all origins
+app.use(cors(corsOptions)); // Allows requests from specified origins
 app.use(bodyParser.json());
 
 // MongoDB Atlas connection
@@ -103,9 +114,9 @@ app.post('/submit', async (req, res) => {
 
         doc.end();
 
-        // Use HTTPS if available, fallback to HTTP
-        const protocol = req.secure ? 'https' : 'http'; // Check if the request is secure
-        const backendUrl = `${protocol}://${req.get('host')}`; // Use the host of the request
+        // Ensure the backend URL uses HTTPS
+        const protocol = 'https';
+        const backendUrl = `${protocol}://${req.get('host')}`;
         const downloadLink = `${backendUrl}/pdf/${pdfFilename}`;
 
         // Send response with download link
