@@ -120,6 +120,11 @@ app.post('/submit', async (req, res) => {
     }
 });
 
+// Handle requests to the root of the server
+app.get('/', (req, res) => {
+    res.send('Visitor backend API is running');
+});
+
 // Serve PDFs with correct MIME Type
 app.use('/pdf', (req, res, next) => {
     const filePath = path.join(__dirname, 'public', 'pdfs', req.url);
