@@ -11,7 +11,7 @@ const app = express();
 // CORS options
 const corsOptions = {
     origin: [
-        'https://aryakrishna715.github.io/visitor-frontend', // Frontend URL
+        'https://aryakrishna715.github.io/visitor-frontend/', // Frontend URL
         'https://visitor-backend-23.onrender.com', // Render backend URL
     ],
     methods: 'GET, POST',
