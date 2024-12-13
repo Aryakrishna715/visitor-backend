@@ -43,6 +43,17 @@ app.post('/submit', async (req, res) => {
     try {
         const { visitorName, noOfPersons, purpose, contactNumber, visitDate } = req.body;
 
+        // Validate input data
+        if (!visitorName || !noOfPersons || !purpose || !contactNumber || !visitDate) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+        if (!/^[0-9]{10}$/.test(contactNumber)) {
+            return res.status(400).json({ message: 'Invalid contact number. Please enter a 10-digit number.' });
+        }
+        if (isNaN(noOfPersons) || noOfPersons <= 0) {
+            return res.status(400).json({ message: 'Invalid number of persons. Please enter a positive number.' });
+        }
+
         // Save to database
         const visitor = new Visitor({ visitorName, noOfPersons, purpose, contactNumber, visitDate });
         const savedVisitor = await visitor.save();
@@ -100,6 +111,7 @@ app.post('/submit', async (req, res) => {
         const backendUrl = `${protocol}://${req.get('host')}`;
         const downloadLink = `${backendUrl}/pdf/${pdfFilename}`;
 
+        // Send response with download link
         res.json({
             success: true,
             message: 'E-Pass generated successfully!',
