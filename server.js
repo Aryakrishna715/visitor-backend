@@ -11,8 +11,8 @@ const app = express();
 // CORS options
 const corsOptions = {
     origin: [
-        'https://aryakrishna715.github.io', // Frontend URL
-        'http://localhost:3001', // Local testing
+        'https://aryakrishna715.github.io/visitor-frontend/', // Frontend URL
+        'https://visitor-backend-21.onrender.com', // Render backend URL
     ],
     methods: 'GET, POST',
     allowedHeaders: 'Content-Type, Authorization',
@@ -133,7 +133,7 @@ app.use('/pdf', (req, res, next) => {
     const filePath = path.join(__dirname, 'public', 'pdfs', req.url);
     if (fs.existsSync(filePath)) {
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
         return res.sendFile(filePath);
     }
     res.status(404).send('File not found');
@@ -145,5 +145,5 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // Start server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server running at https://visitor-backend-20.onrender.com`);
 });
