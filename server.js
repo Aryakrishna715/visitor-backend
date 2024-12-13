@@ -5,13 +5,14 @@ const cors = require('cors');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config(); // For environment variables
 
 const app = express();
 
 // CORS options
 const corsOptions = {
     origin: [
-        'https://aryakrishna715.github.io/visitor-frontend/', // Frontend URL
+        'https://aryakrishna715.github.io/visitor-frontend', // Frontend URL
         'https://visitor-backend-21.onrender.com', // Render backend URL
     ],
     methods: 'GET, POST',
@@ -21,8 +22,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// MongoDB Atlas connection
-const mongoURI = "mongodb+srv://snehasnair1149:EbHrylGWLOYaNfyL@cluster0.xysjr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// MongoDB Atlas connection using environment variable
+const mongoURI = process.env.MONGO_URI || "your-default-mongo-uri-here";
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("Connected to MongoDB Atlas"))
     .catch(err => console.error("MongoDB connection error:", err));
@@ -45,7 +46,7 @@ app.post('/submit', async (req, res) => {
 
         // Validate input data
         if (!visitorName || !noOfPersons || !purpose || !contactNumber || !visitDate) {
-            return res.status(400).json({ message: 'All fields are required' });
+            return res.status(400).json({ message: 'All fields are required.' });
         }
         if (!/^[0-9]{10}$/.test(contactNumber)) {
             return res.status(400).json({ message: 'Invalid contact number. Please enter a 10-digit number.' });
@@ -58,17 +59,18 @@ app.post('/submit', async (req, res) => {
         const visitor = new Visitor({ visitorName, noOfPersons, purpose, contactNumber, visitDate });
         const savedVisitor = await visitor.save();
 
-        // PDF generation
-        const pdfDirectory = path.join(__dirname, 'public', 'pdfs');
-        if (!fs.existsSync(pdfDirectory)) {
-            fs.mkdirSync(pdfDirectory, { recursive: true });
-        }
+        // Ensure public and pdf directories exist
+        const publicDirectory = path.join(__dirname, 'public');
+        const pdfDirectory = path.join(publicDirectory, 'pdfs');
+        if (!fs.existsSync(publicDirectory)) fs.mkdirSync(publicDirectory);
+        if (!fs.existsSync(pdfDirectory)) fs.mkdirSync(pdfDirectory);
 
+        // PDF generation
         const pdfFilename = `${savedVisitor._id}-epass.pdf`;
         const pdfPath = path.join(pdfDirectory, pdfFilename);
         const doc = new PDFDocument();
-        const logoPath = path.join(__dirname, 'public', 'logo.png');
-        const mapPath = path.join(__dirname, 'public', 'map.png');
+        const logoPath = path.join(publicDirectory, 'logo.png');
+        const mapPath = path.join(publicDirectory, 'map.png');
         const timezone = 'Asia/Kolkata';
 
         doc.pipe(fs.createWriteStream(pdfPath));
@@ -79,7 +81,7 @@ app.post('/submit', async (req, res) => {
             doc.image(logoPath, doc.page.width - 110, 10, { fit: [100, 100], align: 'right' });
         }
 
-        // Content
+        // Add content to the PDF
         doc.font('Times-Bold').fontSize(28).fillColor('blue')
             .text('Brindavan Group of Institutions', { align: 'center' });
         doc.moveDown();
@@ -107,7 +109,7 @@ app.post('/submit', async (req, res) => {
         doc.end();
 
         // Generate download link
-        const protocol = req.secure ? 'https' : 'http';
+        const protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
         const backendUrl = `${protocol}://${req.get('host')}`;
         const downloadLink = `${backendUrl}/pdf/${pdfFilename}`;
 
@@ -125,7 +127,7 @@ app.post('/submit', async (req, res) => {
 
 // Root message
 app.get('/', (req, res) => {
-    res.send('Visitor backend API is running');
+    res.send('Visitor backend API is running.');
 });
 
 // Serve PDFs
@@ -136,7 +138,7 @@ app.use('/pdf', (req, res, next) => {
         res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
         return res.sendFile(filePath);
     }
-    res.status(404).send('File not found');
+    res.status(404).send('File not found.');
 });
 
 // Serve static files
@@ -145,5 +147,5 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // Start server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Server running at https://visitor-backend-21.onrender.com`);
+    console.log(`Server running at http://localhost:${PORT}`);
 });
