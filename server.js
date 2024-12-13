@@ -5,7 +5,6 @@ const cors = require('cors');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config(); // For environment variables
 
 const app = express();
 
@@ -13,7 +12,7 @@ const app = express();
 const corsOptions = {
     origin: [
         'https://aryakrishna715.github.io/visitor-frontend', // Frontend URL
-        'https://visitor-backend-22.onrender.com', // Render backend URL
+        'https://visitor-backend-23.onrender.com', // Render backend URL
     ],
     methods: 'GET, POST',
     allowedHeaders: 'Content-Type, Authorization',
@@ -22,8 +21,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// MongoDB Atlas connection using environment variable
-const mongoURI = process.env.MONGO_URI || "your-default-mongo-uri-here";
+// MongoDB Atlas connection with a hardcoded URI
+const mongoURI = "mongodb+srv://snehasnair1149:EbHrylGWLOYaNfyL@cluster0.xysjr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; // Replace with your MongoDB URI
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("Connected to MongoDB Atlas"))
     .catch(err => console.error("MongoDB connection error:", err));
@@ -145,7 +144,7 @@ app.use('/pdf', (req, res, next) => {
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Start server
-const PORT = process.env.PORT || 3001;
+const PORT = 3001; // Set your desired port
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
