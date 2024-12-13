@@ -11,7 +11,7 @@ const app = express();
 // CORS options to allow specific origins
 const corsOptions = {
     origin: [
-        'https://aryakrishna715.github.io/visitor-frontend/', // Replace with actual frontend URL
+        'https://aryakrishna715.github.io/visitor-frontend/submit', // Replace with actual frontend URL
         'http://localhost:3001', // Add localhost for local testing if needed
     ],
     methods: 'GET, POST',
