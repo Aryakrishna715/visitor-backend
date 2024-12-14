@@ -109,13 +109,13 @@ app.post('/submit', async (req, res) => {
         // Generate download link
         const protocol = req.secure ? 'https' : 'http';
         const backendUrl = `${protocol}://${req.get('host')}`;
-        const downloadLink = `${backendUrl}/pdf/${pdfFilename}`;
+        const pdfURL = `${backendUrl}/pdf/${pdfFilename}`;
 
-        // Send response with download link
+        // Send response with the PDF URL
         res.json({
             success: true,
             message: 'E-Pass generated successfully!',
-            downloadLink: downloadLink,
+            pdfURL: pdfURL, // Send the PDF URL to the frontend
         });
     } catch (err) {
         console.error("Error handling form submission:", err);
@@ -133,7 +133,7 @@ app.use('/pdf', (req, res, next) => {
     const filePath = path.join(__dirname, 'public', 'pdfs', req.url);
     if (fs.existsSync(filePath)) {
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
+        res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`); // Open in browser
         return res.sendFile(filePath);
     }
     res.status(404).send('File not found');
@@ -143,7 +143,7 @@ app.use('/pdf', (req, res, next) => {
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Start server
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
