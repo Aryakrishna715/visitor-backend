@@ -100,10 +100,13 @@ app.post('/submit', async (req, res) => {
         doc.moveDown();
 
         if (fs.existsSync(mapPath)) {
-            doc.image(mapPath, { fit: [500, 400], align: 'center' });
-        } else {
-            doc.text('Map not available.');
-        }
+    doc.image(mapPath, {
+        fit: [500, 400], // Fit the image within these dimensions
+        align: 'center',
+    }).translate(0, -14.17); // Move the map 0.5 cm upwards
+} else {
+    doc.text('Map not available.');
+}
         doc.end();
 
         // Generate download link
